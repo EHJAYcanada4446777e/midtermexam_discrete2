@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Campus Navigation System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- GRID BACKGROUND -->
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <circle cx="14" cy="14" r="13" stroke="var(--accent)" stroke-width="1.5"/>
+          <circle cx="14" cy="14" r="4" fill="var(--accent)"/>
+          <line x1="14" y1="1" x2="14" y2="7" stroke="var(--accent)" stroke-width="1.5"/>
+          <line x1="14" y1="21" x2="14" y2="27" stroke="var(--accent)" stroke-width="1.5"/>
+          <line x1="1" y1="14" x2="7" y2="14" stroke="var(--accent)" stroke-width="1.5"/>
+          <line x1="21" y1="14" x2="27" y2="14" stroke="var(--accent)" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="header-title">Smart Campus<span class="accent-text"> Navigation</span></h1>
+        <p class="header-sub">Graph-Based Pathfinding System</p>
+      </div>
+    </div>
+    <div class="header-badges">
+      <span class="badge badge-algo">Paul, Ehjay, Herman</span>
+      <span class="badge badge-mode" id="modeBadge">Unweighted</span>
+    </div>
+  </header>
+
+  <!-- MAIN LAYOUT -->
+  <div class="app-layout">
+
+    <!-- LEFT PANEL -->
+    <aside class="panel panel-left">
+
+      <!-- TABS -->
+      <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="build" onclick="switchTab('build', this)">
+          <span class="tab-icon">⬡</span> Build
+        </button>
+        <button class="tab-btn" data-tab="find" onclick="switchTab('find', this)">
+          <span class="tab-icon">◎</span> Navigate
+        </button>
+        <button class="tab-btn" data-tab="data" onclick="switchTab('data', this)">
+          <span class="tab-icon">≡</span> Data
+        </button>
+      </nav>
+
+      <!-- BUILD TAB -->
+      <div class="tab-content active" id="tab-build">
+
+        <section class="card">
+          <div class="card-header">
+            <span class="card-icon">⚡</span>
+            <span>Quick Presets</span>
+          </div>
+          <div class="preset-grid">
+            <button class="preset-btn" onclick="loadPreset('campus')">
+              <span class="preset-emoji">🏫</span>
+              <span>Campus</span>
+            </button>
+            <button class="preset-btn" onclick="loadPreset('city')">
+              <span class="preset-emoji">🏙</span>
+              <span>City</span>
+            </button>
+            <button class="preset-btn preset-clear" onclick="clearAll()">
+              <span class="preset-emoji">🗑</span>
+              <span>Clear</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <span class="card-icon">◉</span>
+            <span>Add Location</span>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Location Name</label>
+            <div class="input-row">
+              <input class="field-input" type="text" id="nodeInput"
+                     placeholder="e.g. Library" maxlength="24"
+                     onkeydown="if(event.key==='Enter') addNode()" />
+              <button class="icon-btn" onclick="addNode()" title="Add Location">＋</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <span class="card-icon">⟷</span>
+            <span>Add Connection</span>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">From</label>
+            <select class="field-input" id="edgeFrom">
+              <option value="">— select location —</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">To</label>
+            <select class="field-input" id="edgeTo">
+              <option value="">— select location —</option>
+            </select>
+          </div>
+
+          <div class="weight-row">
+            <label class="field-label">Weighted Graph</label>
+            <label class="toggle">
+              <input type="checkbox" id="weightToggle" onchange="toggleWeight()" />
+              <span class="toggle-track">
+                <span class="toggle-thumb"></span>
+              </span>
+            </label>
+          </div>
+
+          <div class="field-group" id="weightGroup" style="display:none">
+            <label class="field-label">Distance (meters)</label>
+            <input class="field-input" type="number" id="weightInput"
+                   placeholder="e.g. 150" min="1" value="100" />
+          </div>
+
+          <button class="btn btn-secondary full-width" onclick="addEdge()">
+            ⟷ &nbsp;Add Connection
+          </button>
+        </section>
+
+      </div><!-- /tab-build -->
+
+      <!-- NAVIGATE TAB -->
+      <div class="tab-content" id="tab-find">
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <span class="stat-num" id="statNodes">0</span>
+            <span class="stat-lbl">Locations</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-num" id="statEdges">0</span>
+            <span class="stat-lbl">Connections</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-num" id="statConn" style="color:var(--muted)">—</span>
+            <span class="stat-lbl">Connected</span>
+          </div>
+        </div>
+
+        <section class="card">
+          <div class="card-header">
+            <span class="card-icon">🔍</span>
+            <span>Shortest Path Finder</span>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Start Location</label>
+            <select class="field-input" id="pathFrom">
+              <option value="">— select —</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Destination</label>
+            <select class="field-input" id="pathTo">
+              <option value="">— select —</option>
+            </select>
+          </div>
+          <button class="btn btn-primary full-width" onclick="findPath()">
+            Find Shortest Path →
+          </button>
+          <div class="result-box" id="pathResult"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <span class="card-icon">⚡</span>
+            <span>Connectivity Check</span>
+          </div>
+          <div class="two-col">
+            <div class="field-group">
+              <label class="field-label">Location A</label>
+              <select class="field-input" id="connA">
+                <option value="">— select —</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Location B</label>
+              <select class="field-input" id="connB">
+                <option value="">— select —</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-secondary full-width" onclick="checkConnectivity()">
+            Check Connection
+          </button>
+          <div class="result-box" id="connResult"></div>
+        </section>
+
+      </div><!-- /tab-find -->
+
+      <!-- DATA TAB -->
+      <div class="tab-content" id="tab-data">
+
+        <section class="card">
+          <div class="card-header">
+            <span class="card-icon">◉</span>
+            <span>Locations</span>
+            <span class="count-badge" id="countNodes">0</span>
+          </div>
+          <div class="list-container" id="nodeList">
+            <div class="empty-state">No locations added yet.</div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <span class="card-icon">⟷</span>
+            <span>Connections</span>
+            <span class="count-badge" id="countEdges">0</span>
+          </div>
+          <div class="list-container" id="edgeList">
+            <div class="empty-state">No connections added yet.</div>
+          </div>
+        </section>
+
+      </div><!-- /tab-data -->
+
+    </aside>
+
+    <!-- CANVAS PANEL -->
+    <main class="panel panel-canvas">
+      <canvas id="mapCanvas"></canvas>
+
+      <!-- Toolbar -->
+      <div class="canvas-toolbar">
+        <button class="tool-btn" onclick="resetView()" title="Reset View">⟳</button>
+        <button class="tool-btn" onclick="zoomIn()" title="Zoom In">＋</button>
+        <button class="tool-btn" onclick="zoomOut()" title="Zoom Out">－</button>
+      </div>
+
+      <!-- Legend -->
+      <div class="canvas-legend">
+        <div class="legend-item">
+          <span class="legend-dot node-dot"></span> Location
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot start-dot"></span> Start / End
+        </div>
+        <div class="legend-item">
+          <span class="legend-line path-line"></span> Shortest Path
+        </div>
+        <div class="legend-item">
+          <span class="legend-line edge-line"></span> Connection
+        </div>
+      </div>
+
+      <!-- Hint -->
+      <div class="canvas-hint">Click on map to place a location · Drag to move nodes</div>
+    </main>
+
+  </div><!-- /app-layout -->
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
